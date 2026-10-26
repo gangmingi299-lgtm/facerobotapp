@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Face Robot · 얼굴 좌표 인식</title>
+<style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#101a2b;--line:#263850;--text:#e8f2ff;--muted:#91a5bf;--cyan:#51e5ff;--lime:#b7ff75;--pink:#ff6bba}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#16314c 0,transparent 60%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+main{max-width:1120px;margin:auto;padding:28px 20px 40px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border:1px solid #3a7890;border-radius:12px;display:grid;place-items:center;color:var(--cyan);font-size:22px;background:#102c3c}.eyebrow{color:var(--cyan);font-size:11px;letter-spacing:.22em;font-weight:800}.brand h1{font-size:20px;margin:3px 0 0;letter-spacing:.03em}.status{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:99px;padding:8px 12px;white-space:nowrap}.status i{display:inline-block;width:7px;height:7px;background:#72839a;border-radius:50%;margin-right:7px}.hero{margin-bottom:20px}.hero h2{font-size:clamp(27px,4vw,43px);line-height:1.08;margin:0 0 10px;letter-spacing:-.04em}.hero h2 span{color:var(--cyan)}.hero p{color:var(--muted);margin:0;font-size:14px;line-height:1.7}.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.85fr);gap:16px}.panel{background:linear-gradient(145deg,#111d30,#0c1422);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 16px 50px #0002}.panelhead{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);gap:10px}.panelhead strong{font-size:13px;letter-spacing:.08em}.small{font-size:11px;color:var(--muted)}.screen{position:relative;aspect-ratio:4/3;background:#050a12;display:grid;place-items:center;overflow:hidden}.screen video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:none}.screen canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.placeholder{text-align:center;padding:24px;color:var(--muted)}.placeholder .faceicon{font-size:52px;color:#31546c;margin-bottom:10px}.placeholder b{display:block;color:#dcecff;font-size:14px;margin-bottom:6px}.placeholder p{font-size:12px;line-height:1.6;max-width:260px;margin:0 auto}.scanline{position:absolute;left:0;right:0;height:1px;background:var(--cyan);opacity:.35;box-shadow:0 0 12px var(--cyan);top:50%;display:none}.controls{display:flex;flex-wrap:wrap;gap:9px;padding:15px 18px}.btn{border:1px solid #31516b;background:#14263a;color:var(--text);border-radius:10px;padding:11px 14px;font-weight:700;font-size:12px;cursor:pointer;transition:.15s}.btn:hover{border-color:var(--cyan);transform:translateY(-1px)}.btn.primary{background:var(--cyan);color:#06111b;border-color:var(--cyan)}.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}.hint{padding:0 18px 16px;font-size:11px;line-height:1.6;color:var(--muted)}.metrics{padding:15px;display:grid;gap:10px}.metric{border:1px solid var(--line);background:#0a1321;border-radius:13px;padding:14px}.metric .label{color:var(--muted);font-size:11px;letter-spacing:.1em;font-weight:800}.metric .value{display:flex;align-items:baseline;gap:7px;margin-top:9px}.metric .number{font-size:30px;font-weight:750;letter-spacing:-.04em;font-variant-numeric:tabular-nums}.metric .unit{font-size:11px;color:var(--muted)}.metric.x .number{color:var(--cyan)}.metric.y .number{color:var(--lime)}.metric.z .number{color:var(--pink)}.meter{height:3px;background:#1c2b3e;border-radius:9px;margin-top:12px;overflow:hidden}.meter div{height:100%;width:50%;background:currentColor;transition:width .1s}.x .meter{color:var(--cyan)}.y .meter{color:var(--lime)}.z .meter{color:var(--pink)}.readout{padding:0 15px 15px}.readoutbox{border:1px dashed #2c435d;border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}.readoutbox b{color:var(--text);font-variant-numeric:tabular-nums}.footer{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:16px;color:#7389a5;font-size:11px;line-height:1.6}.notice{margin-top:15px;padding:12px 14px;border:1px solid #55472a;background:#241e12;border-radius:12px;color:#dfc995;font-size:12px;line-height:1.6;display:none}.notice.show{display:block}
+@media(max-width:760px){main{padding:20px 12px}.layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(3,minmax(0,1fr));padding:10px}.metric{padding:10px}.metric .number{font-size:23px}.readout{padding:0 10px 10px}.panelhead{padding:14px}.hero h2{font-size:32px}.status{font-size:10px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div class="brand"><div class="logo">⌖</div><div><div class="eyebrow">COMPUTER VISION / LAB 01</div><h1>FACE ROBOT</h1></div></div><div class="status" id="status"><i></i> SYSTEM STANDBY</div></header>
+<section class="hero"><h2>Face tracking<span>.</span><br>좌표를 실시간으로 읽다.</h2><p>웹캠에서 얼굴을 찾고 화면 중심을 기준으로 X · Y · Z 좌표를 추정합니다.<br>카메라 영상은 브라우저 안에서 처리됩니다.</p></section>
+<div class="layout">
+<section class="panel"><div class="panelhead"><strong>LIVE CAMERA FEED</strong><span class="small" id="feedLabel">NO SIGNAL</span></div>
+<div class="screen" id="screen"><div class="placeholder" id="placeholder"><div class="faceicon">◎</div><b>카메라 연결 대기 중</b><p>시작 버튼을 누르고 브라우저의 카메라 권한을 허용하세요.</p></div><video id="video" autoplay playsinline muted></video><canvas id="overlay"></canvas><div class="scanline" id="scanline"></div></div>
+<div class="controls"><button class="btn primary" id="start">▶ 카메라 시작</button><button class="btn" id="stop" disabled>■ 정지</button><button class="btn" id="reset">↺ 좌표 초기화</button></div><div class="hint">※ HTTPS 또는 localhost에서 카메라가 작동합니다. 얼굴 검출은 브라우저 내 MediaPipe 모델을 사용합니다.</div>
+</section>
+<aside class="panel"><div class="panelhead"><strong>POSITION DATA</strong><span class="small" id="tracking">WAITING</span></div>
+<div class="metrics">
+<div class="metric x"><div class="label">X AXIS</div><div class="value"><span class="number" id="x">—</span><span class="unit">px</span></div><div class="meter"><div id="mx"></div></div></div>
+<div class="metric y"><div class="label">Y AXIS</div><div class="value"><span class="number" id="y">—</span><span class="unit">px</span></div><div class="meter"><div id="my"></div></div></div>
+<div class="metric z"><div class="label">Z AXIS</div><div class="value"><span class="number" id="z">—</span><span class="unit">relative</span></div><div class="meter"><div id="mz"></div></div></div>
+</div>
+<div class="readout"><div class="readoutbox"><span>FACE DETECTED</span><b id="detected">NO</b></div></div>
+</aside></div>
+<div class="notice" id="notice"></div>
+<footer class="footer"><span>FACE ROBOT / REAL-TIME TRACKING INTERFACE</span><span>X·Y = 화면 중심 기준 픽셀 · Z = 얼굴 크기 기반 상대 거리 지표</span></footer>
+</main>
+<script type="module">
+const $=id=>document.getElementById(id);
+const video=$('video'), canvas=$('overlay'), ctx=canvas.getContext('2d');
+let detector=null, stream=null, raf=0, running=false, lastModelTime=0;
+function status(text,active=false){$('status').innerHTML=`<i style="background:${active?'#b7ff75':'#72839a'}"></i> ${text}`;}
+function notice(text){$('notice').textContent=text;$('notice').classList.add('show');}
+function clearNotice(){$('notice').classList.remove('show');}
+function resize(){const r=$('screen').getBoundingClientRect();canvas.width=Math.max(1,Math.round(r.width*devicePixelRatio));canvas.height=Math.max(1,Math.round(r.height*devicePixelRatio));ctx.setTransform(canvas.width/video.videoWidth||1,0,0,canvas.height/video.videoHeight||1,0,0);}
+function drawBox(box){const sx=video.videoWidth/Math.max(1,canvas.width), sy=video.videoHeight/Math.max(1,canvas.height);ctx.save();ctx.scale(canvas.width/video.videoWidth,canvas.height/video.videoHeight);ctx.strokeStyle='#51e5ff';ctx.lineWidth=2;ctx.shadowColor='#51e5ff';ctx.shadowBlur=12;ctx.strokeRect(box.x,box.y,box.width,box.height);ctx.shadowBlur=0;const l=18;ctx.lineWidth=4;for(const [x,y,dx,dy] of [[box.x,box.y,1,1],[box.x+box.width,box.y,-1,1],[box.x,box.y+box.height,1,-1],[box.x+box.width,box.y+box.height,-1,-1]]){ctx.beginPath();ctx.moveTo(x+dx*l,y);ctx.lineTo(x,y);ctx.lineTo(x,y+dy*l);ctx.stroke()}ctx.restore();}
+function setMetric(axis,val,range){$(axis).textContent=val;$('m'+axis).style.width=Math.max(2,Math.min(100,Math.abs(val)/range*100))+'%';}
+async function start(){
+ clearNotice();
+ if(!navigator.mediaDevices?.getUserMedia){notice('이 브라우저에서 카메라를 사용할 수 없습니다. GitHub Pages 주소(HTTPS)에서 열어주세요.');return;}
+ $('start').disabled=true;
+ try{
+  status('LOADING MODEL');
+  const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22');
+  const fileset=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm');
+  detector=await vision.FaceDetector.createFromOptions(fileset,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite',delegate:'CPU'},runningMode:'VIDEO',minDetectionConfidence:.55});
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+  video.srcObject=stream;await video.play();
+  video.style.display='block';$('placeholder').style.display='none';$('scanline').style.display='block';
+  running=true;$('stop').disabled=false;$('feedLabel').textContent='LIVE';status('CAMERA ONLINE',true);$('tracking').textContent='SCANNING';
+  loop();
+ }catch(e){console.error(e);status('CONNECTION FAILED');$('start').disabled=false;let msg='카메라 또는 얼굴 인식 모델을 시작하지 못했습니다.';if(e.name==='NotAllowedError')msg='카메라 권한이 차단되었습니다. 주소창 왼쪽의 사이트 설정에서 카메라를 허용하세요.';else if(e.name==='NotFoundError')msg='사용 가능한 카메라를 찾지 못했습니다.';else msg+=' 인터넷 연결과 카메라 권한을 확인한 뒤 다시 시도하세요.';notice(msg);}
+}
+function loop(){
+ if(!running)return;
+ if(video.readyState>=2&&video.videoWidth){
+  if(canvas.width!==Math.round($('screen').clientWidth*devicePixelRatio)||canvas.height!==Math.round($('screen').clientHeight*devicePixelRatio)){canvas.width=Math.round($('screen').clientWidth*devicePixelRatio);canvas.height=Math.round($('screen').clientHeight*devicePixelRatio);}
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  try{
+   const result=detector.detectForVideo(video,performance.now());
+   if(result.detections.length){
+    const d=result.detections.sort((a,b)=>(b.categories?.[0]?.score||0)-(a.categories?.[0]?.score||0))[0], box=d.boundingBox;
+    drawBox(box);
+    // Video is mirrored visually, so invert X for screen-relative coordinates.
+    const cx=video.videoWidth-(box.originX+box.width/2), cy=box.originY+box.height/2;
+    const x=Math.round(cx-video.videoWidth/2), y=Math.round(video.videoHeight/2-cy);
+    const z=Math.round((box.width/video.videoWidth)*1000)/10;
+    setMetric('x',x,video.videoWidth/2);setMetric('y',y,video.videoHeight/2);setMetric('z',z,60);
+    $('detected').textContent='YES';$('tracking').textContent='TRACKING';$('tracking').style.color='#b7ff75';
+   }else{$('detected').textContent='NO';$('tracking').textContent='SEARCHING';$('tracking').style.color='';}
+  }catch(e){console.warn(e);}
+ }
+ raf=requestAnimationFrame(loop);
+}
+function stop(){
+ running=false;cancelAnimationFrame(raf);
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ video.srcObject=null;video.style.display='none';$('placeholder').style.display='block';$('scanline').style.display='none';ctx.clearRect(0,0,canvas.width,canvas.height);
+ $('start').disabled=false;$('stop').disabled=true;$('feedLabel').textContent='NO SIGNAL';$('tracking').textContent='WAITING';$('tracking').style.color='';$('detected').textContent='NO';status('SYSTEM STANDBY');
+}
+$('start').addEventListener('click',start);$('stop').addEventListener('click',stop);
+$('reset').addEventListener('click',()=>{for(const a of ['x','y','z']){$(a).textContent='—';$('m'+a).style.width='2%';}$('detected').textContent='NO';$('tracking').textContent='WAITING';});
+window.addEventListener('beforeunload',stop);
+</script>
+</body>
+</html>
